@@ -5,9 +5,10 @@ Raspberry Pi 2 or Raspberry Pi 3 computer be used as the host machine
 [FAQ](FAQ.md#can-i-run-klipper-on-something-other-than-a-raspberry-pi-3)
 for other machines).
 
-Klipper currently supports Atmel ATmega based micro-controllers,
-Arduino Due (Atmel SAM3x8e ARM micro-controller), Smoothieboard (ARM
-LPC176x), and [Beaglebone PRU](beaglebone.md) based printers.
+Klipper currently supports a number of Atmel ATmega based
+micro-controllers,
+[ARM based micro-controllers](Features.md#step-benchmarks), and
+[Beaglebone PRU](beaglebone.md) based printers.
 
 Prepping an OS image
 ====================
@@ -126,11 +127,11 @@ Configuring Klipper
 
 The Klipper configuration is stored in a text file on the Raspberry
 Pi. Take a look at the example config files in the
-[config directory](../config/). The
-[example.cfg](../config/example.cfg) file contains documentation on
-command parameters and it can also be used as an initial config file
-template. However, for most printers, one of the other config files
-may be a more concise starting point.
+[config directory](https://github.com/KevinOConnor/klipper/tree/master/config/). The
+[example.cfg](https://github.com/KevinOConnor/klipper/tree/master/config/example.cfg)
+file contains documentation on command parameters and it can also be
+used as an initial config file template. However, for most printers,
+one of the other config files may be a more concise starting point.
 
 Arguably the easiest way to update the Klipper configuration file is
 to use a desktop editor that supports editing files over the "scp"
