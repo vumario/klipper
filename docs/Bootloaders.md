@@ -29,7 +29,7 @@ AVR micro-controllers
 In general, the Arduino project is a good reference for bootloaders
 and flashing procedures on the 8-bit Atmel Atmega micro-controllers.
 In particular, the "boards.txt" file:
-https://github.com/arduino/Arduino/blob/1.8.5/hardware/arduino/avr/boards.txt
+[https://github.com/arduino/Arduino/blob/1.8.5/hardware/arduino/avr/boards.txt](https://github.com/arduino/Arduino/blob/1.8.5/hardware/arduino/avr/boards.txt)
 is a useful reference.
 
 To flash a bootloader itself, the AVR chips require an external
@@ -115,8 +115,9 @@ device.
 
 The Teensy++ device from pjrc.com comes with a proprietary bootloader.
 It requires a custom flashing tool from
-https://github.com/PaulStoffregen/teensy_loader_cli . One can flash an
-application with it using something like:
+[https://github.com/PaulStoffregen/teensy_loader_cli](https://github.com/PaulStoffregen/teensy_loader_cli).
+One can flash an application with it using something like:
+
 ```
 teensy_loader_cli --mcu=at90usb1286 out/klipper.elf.hex -v
 ```
@@ -153,8 +154,10 @@ Due, this sequence can be accomplished by setting a baud rate of 1200
 on the "programming usb port" (the USB port closest to the power
 supply).
 
-The code at https://github.com/shumatech/BOSSA can be used to program
-the SAM3. It is recommended to use version 1.9 or later.
+The code at
+[https://github.com/shumatech/BOSSA](https://github.com/shumatech/BOSSA)
+can be used to program the SAM3. It is recommended to use version 1.9
+or later.
 
 To flash an application use something like:
 ```
@@ -172,8 +175,10 @@ serial port or from USB.
 To enable the ROM, the "erase" pin is held high during a reset, which
 erases the flash contents, and causes the ROM to run.
 
-The code at https://github.com/shumatech/BOSSA can be used to program
-the SAM4. It is necessary to use version `1.8.0` or higher.
+The code at
+[https://github.com/shumatech/BOSSA](https://github.com/shumatech/BOSSA)
+can be used to program the SAM4. It is necessary to use version
+`1.8.0` or higher.
 
 To flash an application use something like:
 ```
@@ -185,29 +190,69 @@ SAMD21 micro-controllers (Arduino Zero)
 
 The SAMD21 bootloader is flashed via the ARM Serial Wire Debug (SWD)
 interface. This is commonly done with a dedicated SWD hardware dongle.
-Alternatively, it appears one can use a Raspberry Pi with OpenOCD as a
-programmer (see:
-https://learn.adafruit.com/programming-microcontrollers-using-openocd-on-raspberry-pi
-).
+Alternatively, one can use a
+[Raspberry Pi with OpenOCD](#running-openocd-on-the-raspberry-pi).
 
-Unfortunately, there are two common bootloaders deployed on the
-SAMD21. One comes standard with the "Arduino Zero" and the other comes
-standard with the "Arduino M0".
+To flash a bootloader with OpenOCD use a chip config similar to:
+```
+set CHIPNAME at91samd21g18
+source [find target/at91samdXX.cfg]
+```
+Obtain a bootloader - for example:
+```
+wget 'https://github.com/arduino/ArduinoCore-samd/raw/1.8.3/bootloaders/zero/samd21_sam_ba.bin'
+```
+Flash with OpenOCD commands similar to:
+```
+at91samd bootloader 0
+program samd21_sam_ba.bin verify
+```
 
-The Arduino Zero uses an 8KiB bootloader (the application must be
-compiled with a start address of 8KiB). One can enter the bootloader
+The most common bootloader on the SAMD21 is the one found on the
+"Arduino Zero". It uses an 8KiB bootloader (the application must be
+compiled with a start address of 8KiB). One can enter this bootloader
 by double clicking the reset button. To flash an application use
 something like:
 ```
-bossac -U -p "$(FLASH_DEVICE)" --offset=0x2000 -w out/klipper.bin -v -b -R
+bossac -U -p /dev/ttyACM0 --offset=0x2000 -w out/klipper.bin -v -b -R
 ```
 
-The Arduino M0 uses a 16KiB bootloader (the application must be
-compiled with a start address of 16KiB). To flash an application,
-reset the micro-controller and run the flash command within the first
-few seconds of boot - something like:
+In contrast, the "Arduino M0" uses a 16KiB bootloader (the application
+must be compiled with a start address of 16KiB). To flash an
+application on this bootloader, reset the micro-controller and run the
+flash command within the first few seconds of boot - something like:
 ```
 avrdude -c stk500v2 -p atmega2560 -P /dev/ttyACM0 -u -Uflash:w:out/klipper.elf.hex:i
+```
+
+SAMD51 micro-controllers (Adafruit Metro-M4 and similar)
+========================================================
+
+Like the SAMD21, the SAMD51 bootloader is flashed via the ARM Serial
+Wire Debug (SWD) interface. To flash a bootloader with
+[OpenOCD on a Raspberry Pi](#running-openocd-on-the-raspberry-pi) use
+a chip config similar to:
+```
+set CHIPNAME at91samd51g19
+source [find target/atsame5x.cfg]
+```
+Obtain a bootloader - several bootloaders are available from
+[https://github.com/adafruit/uf2-samdx1/releases/latest](https://github.com/adafruit/uf2-samdx1/releases/latest). For example:
+```
+wget 'https://github.com/adafruit/uf2-samdx1/releases/download/v3.7.0/bootloader-itsybitsy_m4-v3.7.0.bin'
+```
+Flash with OpenOCD commands similar to:
+```
+at91samd bootloader 0
+program bootloader-itsybitsy_m4-v3.7.0.bin verify
+at91samd bootloader 16384
+```
+
+The SAMD51 uses a 16KiB bootloader (the application must be compiled
+with a start address of 16KiB). To flash an application use something
+like:
+```
+bossac -U -p /dev/ttyACM0 --offset=0x4000 -w out/klipper.bin -v -b -R
 ```
 
 STM32F103 micro-controllers (Blue Pill devices)
@@ -225,8 +270,8 @@ stm32flash -w out/klipper.bin -v -g 0 /dev/ttyAMA0
 Note that if one is using a Raspberry Pi for the 3.3V serial, the
 stm32flash protocol uses a serial parity mode which the Raspberry Pi's
 "miniuart" does not support. See
-https://www.raspberrypi.org/documentation/configuration/uart.md for
-details on enabling the full uart on the Raspberry Pi GPIO pins.
+[https://www.raspberrypi.org/documentation/configuration/uart.md](https://www.raspberrypi.org/documentation/configuration/uart.md)
+for details on enabling the full uart on the Raspberry Pi GPIO pins.
 
 After flashing, set both "boot 0" and "boot 1" back to low so that
 future resets boot from flash.
@@ -234,7 +279,7 @@ future resets boot from flash.
 ## STM32F103 with stm32duino bootloader ##
 
 The "stm32duino" project has a USB capable bootloader - see:
-https://github.com/rogerclarkmelbourne/STM32duino-bootloader
+[https://github.com/rogerclarkmelbourne/STM32duino-bootloader](https://github.com/rogerclarkmelbourne/STM32duino-bootloader)
 
 This bootloader can be flashed via 3.3V serial with something like:
 ```
@@ -260,13 +305,136 @@ LPC176x micro-controllers (Smoothieboards)
 ==========================================
 
 This document does not describe the method to flash a bootloader
-itself - see: http://smoothieware.org/flashing-the-bootloader for
-further information on that topic.
+itself - see:
+[http://smoothieware.org/flashing-the-bootloader](http://smoothieware.org/flashing-the-bootloader)
+for further information on that topic.
 
 It is common for Smoothieboards to come with a bootloader from:
-https://github.com/triffid/LPC17xx-DFU-Bootloader . When using this
-bootloader the application must be compiled with a start address of
-16KiB. The easiest way to flash an application with this bootloader is
-to copy the application file (eg, `out/klipper.bin`) to a file named
-`firmware.bin` on an SD card, and then to reboot the micro-controller
-with that SD card.
+[https://github.com/triffid/LPC17xx-DFU-Bootloader](https://github.com/triffid/LPC17xx-DFU-Bootloader).
+When using this bootloader the application must be compiled with a
+start address of 16KiB. The easiest way to flash an application with
+this bootloader is to copy the application file (eg,
+`out/klipper.bin`) to a file named `firmware.bin` on an SD card, and
+then to reboot the micro-controller with that SD card.
+
+Running OpenOCD on the Raspberry PI
+===================================
+
+OpenOCD is a software package that can perform low-level chip flashing
+and debugging. It can use the GPIO pins on a Raspberry Pi to
+communicate with a variety of ARM chips.
+
+This section describes how one can install and launch OpenOCD. It is
+derived from the instructions at:
+[https://learn.adafruit.com/programming-microcontrollers-using-openocd-on-raspberry-pi](https://learn.adafruit.com/programming-microcontrollers-using-openocd-on-raspberry-pi)
+
+Begin by downloading and compiling the software (each step may take
+several minutes and the "make" step may take 30+ minutes):
+
+```
+sudo apt-get update
+sudo apt-get install autoconf libtool telnet
+mkdir ~/openocd
+cd ~/openocd/
+git clone http://openocd.zylin.com/openocd
+cd openocd
+./bootstrap
+./configure --enable-sysfsgpio --enable-bcm2835gpio --prefix=/home/pi/openocd/install
+make
+make install
+```
+
+## Configure OpenOCD
+
+Create an OpenOCD config file:
+
+```
+nano ~/openocd/openocd.cfg
+```
+
+Use a config similar to the following:
+
+```
+# Uses RPi pins: GPIO25 for SWDCLK, GPIO24 for SWDIO, GPIO18 for nRST
+source [find interface/raspberrypi2-native.cfg]
+bcm2835gpio_swd_nums 25 24
+bcm2835gpio_srst_num 18
+transport select swd
+
+# Set the chip (at91samd51j19 in this example)
+set CHIPNAME at91samd51j19
+source [find target/atsame5x.cfg]
+
+# Set the adapter speed
+adapter_khz 40
+adapter_nsrst_delay 100
+adapter_nsrst_assert_width 100
+
+init
+targets
+reset halt
+```
+
+## Wire the Raspberry Pi to the target chip
+
+Poweroff both the the Raspberry Pi and the target chip before wiring!
+Verify the target chip uses 3.3V prior to connecting to a Raspberry
+Pi!
+
+Connect GND, SWDCLK, SWDIO, and RST on the target chip to GND, GPIO25,
+GPIO24, and GPIO18 respectively on the Raspberry Pi.
+
+Then power up the Raspberry Pi and provide power to the target chip.
+
+## Run OpenOCD
+
+Run OpenOCD:
+
+```
+cd ~/openocd/
+sudo ~/openocd/install/bin/openocd -f ~/openocd/openocd.cfg
+```
+
+The above should cause OpenOCD to emit some text messages and then
+wait (it should not immediately return to the Unix shell prompt). If
+OpenOCD exits on its own or if it continues to emit text messages then
+double check the wiring.
+
+Once OpenOCD is running and is stable, one can send it commands via
+telnet. Open another ssh session and run the following:
+
+```
+telnet 127.0.0.1 4444
+```
+
+(One can exit telnet by pressing ctrl+] and then running the "quit"
+command.)
+
+## OpenOCD and gdb
+
+It is possible to use OpenOCD with gdb to debug Klipper. The following
+commands assume one is running gdb on a desktop class machine.
+
+Add the following to the OpenOCD config file:
+
+```
+bindto 0.0.0.0
+gdb_port 44444
+```
+
+Restart OpenOCD on the Raspberry Pi and then run the following Unix
+command on the desktop machine:
+
+```
+cd /path/to/klipper/
+gdb out/klipper.elf
+```
+
+Within gdb run:
+
+```
+target remote octopi:44444
+```
+
+(Replace "octopi" with the host name of the Raspberry Pi.) Once gdb is
+running it is possible to set breakpoints and to inspect registers.

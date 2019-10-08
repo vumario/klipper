@@ -66,23 +66,29 @@ $(OUT)%.o: %.c $(OUT)autoconf.h $(OUT)board-link
 	@echo "  Compiling $@"
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
 
+$(OUT)%.ld: %.lds.S $(OUT)board-link
+	@echo "  Preprocessing $@"
+	$(Q)$(CPP) -I$(OUT) -P -MD -MT $@ $< -o $@
+
 ################ Main build rules
 
 $(OUT)board-link: $(KCONFIG_CONFIG)
 	@echo "  Creating symbolic link $(OUT)board"
 	$(Q)mkdir -p $(addprefix $(OUT), $(dirs-y))
 	$(Q)touch $@
-	$(Q)ln -Tsf $(PWD)/src/$(CONFIG_BOARD_DIRECTORY) $(OUT)board
+	$(Q)rm -f $(OUT)board
+	$(Q)ln -sf $(PWD)/src/$(CONFIG_BOARD_DIRECTORY) $(OUT)board
 	$(Q)mkdir -p $(OUT)board-generic
-	$(Q)ln -Tsf $(PWD)/src/generic $(OUT)board-generic/board
+	$(Q)rm -f $(OUT)board-generic/board
+	$(Q)ln -sf $(PWD)/src/generic $(OUT)board-generic/board
 
 $(OUT)%.o.ctr: $(OUT)%.o
 	$(Q)$(OBJCOPY) -j '.compile_time_request' -O binary $^ $@
 
 $(OUT)compile_time_request.o: $(patsubst %.c, $(OUT)src/%.o.ctr,$(src-y)) ./scripts/buildcommands.py
 	@echo "  Building $@"
-	$(Q)cat $(patsubst %.c, $(OUT)src/%.o.ctr,$(src-y)) > $(OUT)klipper.compile_time_request
-	$(Q)$(PYTHON) ./scripts/buildcommands.py -d $(OUT)klipper.dict -t "$(CC);$(AS);$(LD);$(OBJCOPY);$(OBJDUMP);$(STRIP)" $(OUT)klipper.compile_time_request $(OUT)compile_time_request.c
+	$(Q)cat $(patsubst %.c, $(OUT)src/%.o.ctr,$(src-y)) | tr -s '\0' '\n' > $(OUT)compile_time_request.txt
+	$(Q)$(PYTHON) ./scripts/buildcommands.py -d $(OUT)klipper.dict -t "$(CC);$(AS);$(LD);$(OBJCOPY);$(OBJDUMP);$(STRIP)" $(OUT)compile_time_request.txt $(OUT)compile_time_request.c
 	$(Q)$(CC) $(CFLAGS) -c $(OUT)compile_time_request.c -o $@
 
 $(OUT)klipper.elf: $(OBJS_klipper.elf)

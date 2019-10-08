@@ -1,13 +1,13 @@
 # BLTouch support
 #
-# Copyright (C) 2018  Kevin O'Connor <kevin@koconnor.net>
+# Copyright (C) 2018-2019  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import math, logging
 import homing, probe
 
-SIGNAL_PERIOD = 0.025600
-MIN_CMD_TIME = 4 * SIGNAL_PERIOD
+SIGNAL_PERIOD = 0.020
+MIN_CMD_TIME = 5 * SIGNAL_PERIOD
 
 TEST_TIME = 5 * 60.
 RETRY_RESET_TIME = 1.
@@ -16,8 +16,8 @@ ENDSTOP_SAMPLE_TIME = .000015
 ENDSTOP_SAMPLE_COUNT = 4
 
 Commands = {
-    None: 0.0, 'pin_down': 0.000700, 'touch_mode': 0.001200,
-    'pin_up': 0.001500, 'self_test': 0.001800, 'reset': 0.002200,
+    None: 0.0, 'pin_down': 0.000650, 'touch_mode': 0.001165,
+    'pin_up': 0.001475, 'self_test': 0.001780, 'reset': 0.002190,
 }
 
 # BLTouch "endstop" wrapper
@@ -55,7 +55,6 @@ class BLTouchEndstopWrapper:
         self.get_steppers = self.mcu_endstop.get_steppers
         self.home_wait = self.mcu_endstop.home_wait
         self.query_endstop = self.mcu_endstop.query_endstop
-        self.query_endstop_wait = self.mcu_endstop.query_endstop_wait
         self.TimeoutError = self.mcu_endstop.TimeoutError
         # Register BLTOUCH_DEBUG command
         self.gcode = self.printer.lookup_object('gcode')
@@ -68,7 +67,7 @@ class BLTouchEndstopWrapper:
     def handle_connect(self):
         try:
             self.raise_probe()
-        except homing.EndstopError as e:
+        except homing.CommandError as e:
             logging.warning("BLTouch raise probe error: %s", str(e))
     def sync_mcu_print_time(self):
         curtime = self.printer.get_reactor().monotonic()
@@ -114,7 +113,7 @@ class BLTouchEndstopWrapper:
                 try:
                     self.verify_state(check_start_time, check_end_time,
                                       False, "raise probe")
-                except homing.EndstopError as e:
+                except homing.CommandError as e:
                     if retry >= 2:
                         raise
                     msg = "Failed to verify BLTouch probe is raised; retrying."
@@ -144,7 +143,8 @@ class BLTouchEndstopWrapper:
     def home_prepare(self):
         self.test_sensor()
         self.sync_print_time()
-        self.send_cmd('pin_down', duration=self.pin_move_time - MIN_CMD_TIME)
+        duration = max(MIN_CMD_TIME, self.pin_move_time - MIN_CMD_TIME)
+        self.send_cmd('pin_down', duration=duration)
         self.send_cmd(None)
         self.sync_print_time()
         self.mcu_endstop.home_prepare()
@@ -158,10 +158,11 @@ class BLTouchEndstopWrapper:
             if s.get_mcu_position() == mcu_pos:
                 raise homing.EndstopError("BLTouch failed to deploy")
         self.mcu_endstop.home_finalize()
-    def home_start(self, print_time, sample_time, sample_count, rest_time):
+    def home_start(self, print_time, sample_time, sample_count, rest_time,
+                   notify=None):
         rest_time = min(rest_time, ENDSTOP_REST_TIME)
-        self.mcu_endstop.home_start(
-            print_time, sample_time, sample_count, rest_time)
+        self.mcu_endstop.home_start(print_time, sample_time, sample_count,
+                                    rest_time, notify=notify)
     def get_position_endstop(self):
         return self.position_endstop
     cmd_BLTOUCH_DEBUG_help = "Send a command to the bltouch for debugging"

@@ -11,7 +11,7 @@ Frequently asked questions
 8. [Can I run multiple instances of Klipper on the same host machine?](#can-i-run-multiple-instances-of-klipper-on-the-same-host-machine)
 9. [Do I have to use OctoPrint?](#do-i-have-to-use-octoprint)
 10. [Why can't I move the stepper before homing the printer?](#why-cant-i-move-the-stepper-before-homing-the-printer)
-12. [Why is the Z position_endstop set to 0.5 in the default configs?](#why-is-the-z-position_endstop-set-to-05-in-the-default-configs)
+11. [Why is the Z position_endstop set to 0.5 in the default configs?](#why-is-the-z-position_endstop-set-to-05-in-the-default-configs)
 12. [I converted my config from Marlin and the X/Y axes work fine, but I just get a screeching noise when homing the Z axis](#i-converted-my-config-from-marlin-and-the-xy-axes-work-fine-but-i-just-get-a-screeching-noise-when-homing-the-z-axis)
 13. [My TMC motor driver turns off in the middle of a print](#my-tmc-motor-driver-turns-off-in-the-middle-of-a-print)
 14. [I keep getting random "Lost communication with MCU" errors](#i-keep-getting-random-lost-communication-with-mcu-errors)
@@ -102,10 +102,9 @@ will need to manually flash. See if there is a config file in the
 [config directory](https://github.com/KevinOConnor/klipper/tree/master/config)
 with specific instructions for flashing the device. Also, check the
 board manufacturer's documentation to see if it describes how to flash
-the device. Finally, on AVR devices, it may be possible to manually
-flash the device using [avrdude](http://www.nongnu.org/avrdude/) with
-custom command-line parameters - see the avrdude documentation for
-further information.
+the device. Finally, it may be possible to manually flash the device
+using tools such as "avrdude" or "bossac" - see the
+[bootloader document](Bootloaders.md) for additional information.
 
 ### How do I change the serial baud rate?
 
@@ -356,8 +355,7 @@ power is removed).
 The workaround is to use a restart_method other than "command" or to
 flash an updated bootloader to the AVR device. Flashing a new
 bootloader is a one time step that typically requires an external
-programmer - search the web to find the instructions for your
-particular device.
+programmer - see [Bootloaders](Bootloaders.md) for further details.
 
 ### Will the heaters be left on if the Raspberry Pi crashes?
 
